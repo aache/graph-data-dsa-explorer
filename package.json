@@ -2,7 +2,7 @@
   "name": "sample-data-generator",
   "version": "1.0.0",
   "description": "Generates 2000 records of sample friend request data ",
-  "main": "index.js",
+  "main": "generate-dataset.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
