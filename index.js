@@ -1,8 +1,8 @@
 const fs = require('fs');
 
-// Example: generate 200 unique people and 2000 events
+// Example: generate 2000 unique people and 20000 events
 const { faker } = require('@faker-js/faker');
-const names = faker.helpers.uniqueArray(faker.person.fullName, 200);
+const names = faker.helpers.uniqueArray(faker.person.fullName, 2000);
 const statuses = ["sent", "accepted", "denied"];
 let rows = [];
 
@@ -10,7 +10,7 @@ let rows = [];
 rows.push("Date,Sender,Receiver,Status");
 
 // Generate 2000 random events
-for (let i = 0; i < 2000; i++) {
+for (let i = 0; i < 20000; i++) {
   // Pick random sender and receiver (ensure they differ)
   const sender = faker.helpers.arrayElement(names);
   let receiver = faker.helpers.arrayElement(names);
