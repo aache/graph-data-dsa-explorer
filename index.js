@@ -1,36 +1,81 @@
-const fs = require('fs');
+const fs = require("fs");
+const { faker } = require("@faker-js/faker");
 
-// Example: generate 2000 unique people and 20000 events
-const { faker } = require('@faker-js/faker');
-const names = faker.helpers.uniqueArray(faker.person.fullName, 2000);
-const statuses = ["sent", "accepted", "denied"];
+// 1. Create 2000 unique users
+const names = faker.helpers.uniqueArray(() => faker.person.fullName(), 2000);
+
+// Build user profiles (consistent attributes)
+const userProfiles = {};
+
+names.forEach((name) => {
+  const joinDate = faker.date.between({
+    from: "2015-01-01",
+    to: "2023-01-01",
+  });
+
+  userProfiles[name] = {
+    city: faker.location.city(),
+    state: faker.location.state(),
+    country: faker.location.country(),
+    gender: faker.person.sex(),
+    device: faker.helpers.arrayElement(["Mobile", "Desktop", "Tablet"]),
+    verified: faker.datatype.boolean(),
+    joinDate,
+  };
+});
+
+// 2. Setup CSV header
 let rows = [];
+rows.push(
+  "Date,Sender,SenderCity,SenderState,SenderCountry,SenderGender,SenderVerified,SenderJoinDate,Receiver,ReceiverCity,ReceiverState,ReceiverCountry,ReceiverGender,ReceiverVerified,ReceiverJoinDate,DeviceType,Status"
+);
 
-// CSV header
-rows.push("Date,Sender,Receiver,Status");
+const statuses = ["sent", "accepted", "denied"];
 
-// Generate 2000 random events
+// 3. Generate 20,000 events
 for (let i = 0; i < 20000; i++) {
-  // Pick random sender and receiver (ensure they differ)
   const sender = faker.helpers.arrayElement(names);
   let receiver = faker.helpers.arrayElement(names);
-  if (receiver === sender) {
-    // retry if same person selected (simple approach)
-    receiver = faker.helpers.arrayElement(names.filter(n => n !== sender));
+  while (receiver === sender) {
+    receiver = faker.helpers.arrayElement(names);
   }
+
   const status = faker.helpers.arrayElement(statuses);
-  // Random date between 2020-01-01 and now
-  const date = faker.date.between({ from: '2020-01-01', to: Date.now() });
-  // Format date as ISO string (or any desired format)
-  rows.push(`${date.toISOString()},${sender},${receiver},${status}`);
+  const eventDate = faker.date.between({
+    from: "2020-01-01",
+    to: new Date(),
+  });
+
+  const s = userProfiles[sender];
+  const r = userProfiles[receiver];
+
+  rows.push(
+    [
+      eventDate.toISOString(),
+      sender,
+      s.city,
+      s.state,
+      s.country,
+      s.gender,
+      s.verified,
+      s.joinDate.toISOString(),
+
+      receiver,
+      r.city,
+      r.state,
+      r.country,
+      r.gender,
+      r.verified,
+      r.joinDate.toISOString(),
+
+      s.device,
+      status,
+    ].join(",")
+  );
 }
 
-// Write all rows to a CSV file
-const csvContent = rows.join("\n");
-fs.writeFile('friend_requests.csv', csvContent, 'utf8', (err) => {
-  if (err) {
-    console.error("Error writing CSV file:", err);
-  } else {
-    console.log("CSV file saved.");
-  }
+// 4. Write CSV
+fs.writeFile("friend_requests.csv", rows.join("\n"), "utf8", (err) => {
+  if (err) console.error(err);
+  else console.log("CSV generated with consistent user profiles!");
 });
